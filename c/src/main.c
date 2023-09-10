@@ -45,6 +45,7 @@ Token getNextToken(char **input) {
   Token result;
   char numberBuffer[MAX_NUMBER_CHAR_COUNT];
   int numberCharCount;
+
   switch (**input) {
   case '+':
   case '-':
@@ -75,8 +76,8 @@ Token getNextToken(char **input) {
       (*input)++;
     }
     numberBuffer[numberCharCount] = 0;
-    result = (Token) { .type = number, .value = strtod(numberBuffer, 0) };
-	return result;
+    result = (Token){.type = number, .value = strtod(numberBuffer, 0)};
+    return result;
   }
 
   // increment and return invalid, avoids spamming console and segfaulting on
@@ -89,6 +90,10 @@ TokenList getTokens(char *input) {
   Token tokenBuffer[MAX_TOKEN_COUNT];
   int tokenCount = 0;
   while (*input) {
+    if (*input == ' ') {
+      input++;
+      continue;
+    }
     Token nextToken = getNextToken(&input);
     tokenBuffer[tokenCount] = nextToken;
     tokenCount++;
