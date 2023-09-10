@@ -1,7 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define MAX_TOKEN_COUNT 200
+#define MAX_NUMBER_CHAR_COUNT 200
 
 typedef enum {
   invalid,
@@ -9,6 +11,7 @@ typedef enum {
   minus,
   star,
   slash,
+  number,
 } TokenType;
 
 TokenType charToTokenType(char input) {
@@ -40,6 +43,8 @@ typedef struct {
 // string characters "consumes" string characters for generated token
 Token getNextToken(char **input) {
   Token result;
+  char numberBuffer[MAX_NUMBER_CHAR_COUNT];
+  int numberCharCount;
   switch (**input) {
   case '+':
   case '-':
@@ -48,6 +53,30 @@ Token getNextToken(char **input) {
     result = (Token){.type = charToTokenType(**input), .value = 0};
     (*input)++;
     return result;
+
+  case '0':
+  case '1':
+  case '2':
+  case '3':
+  case '4':
+  case '5':
+  case '6':
+  case '7':
+  case '8':
+  case '9':
+    memset(numberBuffer, 0, sizeof(numberBuffer));
+    numberCharCount = 0;
+    while (**input == '0' || **input == '1' || **input == '2' ||
+           **input == '3' || **input == '4' || **input == '5' ||
+           **input == '6' || **input == '7' || **input == '8' ||
+           **input == '9' || **input == '.') {
+      numberBuffer[numberCharCount] = **input;
+      numberCharCount++;
+      (*input)++;
+    }
+    numberBuffer[numberCharCount] = 0;
+    result = (Token) { .type = number, .value = strtod(numberBuffer, 0) };
+	return result;
   }
 
   // increment and return invalid, avoids spamming console and segfaulting on
