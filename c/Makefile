@@ -6,3 +6,7 @@ default: main
 main: src/main.c
 	${CC} ${CFLAGS} -o bin/main src/main.c
 
+clean:
+	rm -rf bin
+	mkdir bin
+
