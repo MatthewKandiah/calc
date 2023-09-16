@@ -19,7 +19,7 @@ typedef struct {
 } Token;
 
 typedef struct ExpressionNode{
-  int value;
+  float value;
   struct ExpressionNode *left;
   struct ExpressionNode *right;
 }ExpressionNode;
@@ -54,6 +54,8 @@ int token_type_to_precedence(TokenType type) {
     case end:
       return 0;
   }
+  printf("ERROR: failed to get precedence\n");
+  exit(1);
 }
 
 ExpressionNode *parse_binary_expression(Token **current_token, ExpressionNode *left) {
@@ -91,6 +93,30 @@ ExpressionNode *parse_binary_expression(Token **current_token, ExpressionNode *l
     binaryNode->right = parse_binary_expression(current_token, right);
     return binaryNode;
   }
+}
+
+float evaluate(ExpressionNode *node) {
+  if (node->left == 0 && node->right == 0){
+    return node->value;
+  }
+  if (node->left == 0 || node->right == 0) {
+    printf("ERROR: poorly formed node with only one child\n");
+    exit(1);
+  }
+  if (node->value == plus) {
+    return evaluate(node->left) + evaluate(node->right);
+  }
+  if (node->value == minus) {
+    return evaluate(node->left) - evaluate(node->right);
+  }
+  if (node->value == star) {
+    return evaluate(node->left) * evaluate(node->right);
+  }
+  if (node->value == slash) {
+    return evaluate(node->left) / evaluate(node->right);
+  }
+  printf("ERROR: failed to evaluate node\n");
+  exit(1);
 }
 
 int main(int argc, char *argv[]) {
@@ -153,12 +179,11 @@ int main(int argc, char *argv[]) {
   token_buffer[token_count] = (Token){.type = end, .value = 0};
   token_count++;
 
-  for (int i = 0; i < token_count; i++) {
-    printf("%d. type=%d, value=%f\n", i, token_buffer[i].type, token_buffer[i].value);
-  }
-
-  // parsing
   Token *current_token_ptr = &token_buffer[0];
   ExpressionNode *first_node = parse_first_token(&current_token_ptr);
   ExpressionNode *root_node = parse_binary_expression(&current_token_ptr, first_node);
+
+  // evaluating
+  float answer = evaluate(root_node);
+  printf("%f\n", answer);
 }
