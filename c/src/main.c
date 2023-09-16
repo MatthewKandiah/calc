@@ -26,6 +26,10 @@ int main(int argc, char *argv[]) {
   int token_count = 0;
   char int_character_buffer[MAX_INT_LENGTH];
   while (*input) {
+    if (*input == ' ') {
+      input++;
+      continue;
+    }
     int int_character_count = 0;
     if (*input == '+') {
       token_buffer[token_count] = (Token){.type = plus, .value = 0};
