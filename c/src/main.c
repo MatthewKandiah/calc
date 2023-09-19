@@ -5,12 +5,12 @@
 #define MAX_INT_LENGTH 200
 
 typedef enum {
-  number,
-  plus,
-  minus,
-  star,
-  slash,
-  end,
+  number, // 0
+  plus,   // 1
+  minus,  // 2
+  star,   // 3
+  slash,  // 4
+  end,    // 5
 } TokenType;
 
 typedef struct {
@@ -41,13 +41,11 @@ ExpressionNode *parse_first_token(Token **currentToken) {
 int token_type_to_precedence(TokenType type) {
   switch (type) {
     case plus:
-      return 10;
     case minus:
-      return 11;
+      return 10;
     case star:
-      return 20;
     case slash:
-      return 21;
+      return 20;
     case number:
       printf("ERROR: getting precedence for number token\n");
       exit(1);
@@ -83,19 +81,26 @@ ExpressionNode *parse_binary_expression(Token **current_token, ExpressionNode *l
 
   Token peek_token = **current_token;
   int next_op_precedence = token_type_to_precedence(peek_token.type);
-  ExpressionNode *binaryNode = malloc(sizeof(ExpressionNode));
-  binaryNode->value = first_token.type;
-  binaryNode->left = left;
+  ExpressionNode *binary_node = malloc(sizeof(ExpressionNode));
+  binary_node->value = first_token.type;
+  binary_node->left = left;
   if (current_operator_precedence >= next_op_precedence) {
-    binaryNode->right = right;
-    return parse_binary_expression(current_token, binaryNode);
+    binary_node->right = right;
+    return parse_binary_expression(current_token, binary_node);
   } else {
-    binaryNode->right = parse_binary_expression(current_token, right);
-    return binaryNode;
+    binary_node->right = parse_binary_expression(current_token, right);
+    return binary_node;
   }
 }
 
 float evaluate(ExpressionNode *node) {
+  printf("DEBUG:\n");
+  printf("%f\n", node->value);
+  if (node->left)
+    printf("%f\n", node->left->value);
+  if (node->right)
+    printf("%f\n", node->right->value);
+
   if (node->left == 0 && node->right == 0){
     return node->value;
   }
