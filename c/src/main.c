@@ -24,6 +24,16 @@ typedef struct ExpressionNode{
   struct ExpressionNode *right;
 }ExpressionNode;
 
+void print_tree(ExpressionNode *node) {
+  if (node){
+    printf("%p:\tvalue=%f,\tleft=%p,\tright=%p\n", node, node->value, node->left, node->right);
+    print_tree(node->left);
+    print_tree(node->right);
+  } else {
+    printf("null node pointer\n");
+  }
+}
+
 ExpressionNode *parse_first_token(Token **currentToken) {
   if ((*currentToken)->type != number) {
     printf("ERROR: Expected first token to be a number\n");
@@ -81,26 +91,25 @@ ExpressionNode *parse_binary_expression(Token **current_token, ExpressionNode *l
 
   Token peek_token = **current_token;
   int next_op_precedence = token_type_to_precedence(peek_token.type);
+
   ExpressionNode *binary_node = malloc(sizeof(ExpressionNode));
   binary_node->value = first_token.type;
   binary_node->left = left;
+
+  ExpressionNode *result;
   if (current_operator_precedence >= next_op_precedence) {
     binary_node->right = right;
-    return parse_binary_expression(current_token, binary_node);
+    result = parse_binary_expression(current_token, binary_node);
   } else {
     binary_node->right = parse_binary_expression(current_token, right);
-    return binary_node;
+    result = binary_node;
   }
+  print_tree(result);
+  printf("\n\n");
+  return result;
 }
 
 float evaluate(ExpressionNode *node) {
-  printf("DEBUG:\n");
-  printf("%f\n", node->value);
-  if (node->left)
-    printf("%f\n", node->left->value);
-  if (node->right)
-    printf("%f\n", node->right->value);
-
   if (node->left == 0 && node->right == 0){
     return node->value;
   }
