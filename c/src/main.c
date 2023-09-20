@@ -24,16 +24,6 @@ typedef struct ExpressionNode{
   struct ExpressionNode *right;
 }ExpressionNode;
 
-void print_tree(ExpressionNode *node) {
-  if (node){
-    printf("%p:\tvalue=%f,\tleft=%p,\tright=%p\n", node, node->value, node->left, node->right);
-    print_tree(node->left);
-    print_tree(node->right);
-  } else {
-    printf("null node pointer\n");
-  }
-}
-
 ExpressionNode *parse_first_token(Token **currentToken) {
   if ((*currentToken)->type != number) {
     printf("ERROR: Expected first token to be a number\n");
@@ -104,8 +94,6 @@ ExpressionNode *parse_binary_expression(Token **current_token, ExpressionNode *l
     binary_node->right = parse_binary_expression(current_token, right);
     result = binary_node;
   }
-  print_tree(result);
-  printf("\n\n");
   return result;
 }
 
