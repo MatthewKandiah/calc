@@ -1,3 +1,4 @@
+#include "calc.h"
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -6,56 +7,6 @@
 
 void printError(char *message) { printf("ERROR: %s\n", message); }
 
-typedef enum {
-  TokenType_number,       // 0
-  TokenType_plus,         // 1
-  TokenType_minus,        // 2
-  TokenType_star,         // 3
-  TokenType_slash,        // 4
-  TokenType_openBracket,  // 5
-  TokenType_closeBracket, // 6
-} TokenType;
-
-typedef struct {
-  TokenType type;
-  union {
-    char c;
-    double f;
-  } value;
-} Token;
-
-typedef enum {
-  ExpressionNodeType_leaf,
-  ExpressionNodeType_binary,
-} ExpressionNodeType;
-
-typedef enum {
-  BinaryOperatorNodeType_addition,
-  BinaryOperatorNodeType_subtraction,
-  BinaryOperatorNodeType_multiplication,
-  BinaryOperatorNodeType_division,
-} BinaryOperatorNodeType;
-
-struct ExpressionNode;
-typedef struct {
-  BinaryOperatorNodeType type;
-  struct ExpressionNode *left;
-  struct ExpressionNode *right;
-} BinaryOperatorNode;
-
-typedef struct {
-  double value;
-} LeafNode;
-
-typedef struct ExpressionNode {
-  ExpressionNodeType type;
-  union {
-    BinaryOperatorNode b;
-    LeafNode l;
-  } node;
-} ExpressionNode;
-
-ExpressionNode *parseExpression(Token *, int);
 // return NULL on error
 ExpressionNode *parseValue(Token *tokens, int tokenCount) {
   if (tokenCount == 0) {
@@ -188,9 +139,10 @@ double evaluate(ExpressionNode *node) {
   }
   }
   printError("evaluate failed to evaluate node");
-  // Don't think there's an easy way to signal in the return that something went wrong
-  // Could pass in a pointer to an error flag if we need to handle this more smartly later?
-  // Or pass in a pointer to where we will store the result and return an error flag? I think both work
+  // Don't think there's an easy way to signal in the return that something went
+  // wrong Could pass in a pointer to an error flag if we need to handle this
+  // more smartly later? Or pass in a pointer to where we will store the result
+  // and return an error flag? I think both work
   return 0;
 }
 
