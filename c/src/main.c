@@ -7,13 +7,13 @@
 void printError(char *message) { printf("ERROR: %s\n", message); }
 
 typedef enum {
-  TokenType_number,
-  TokenType_plus,
-  TokenType_minus,
-  TokenType_star,
-  TokenType_slash,
-  TokenType_openBracket,
-  TokenType_closeBracket,
+  TokenType_number, // 0
+  TokenType_plus, // 1
+  TokenType_minus, // 2
+  TokenType_star, // 3
+  TokenType_slash, // 4
+  TokenType_openBracket, // 5
+  TokenType_closeBracket, // 6
 } TokenType;
 
 typedef struct {
@@ -103,6 +103,18 @@ ExpressionNode *parseFactor(Token *tokens, int tokenCount) {
   // iterate back through tokens, looking for * or /
   for (int i = 0; i < tokenCount; i++) {
     Token token = *(tokens + tokenCount - 1 - i);
+    // skip over contents of brackets
+    printf("token.type=%d\n", token.type);
+    if (token.type == TokenType_closeBracket) {
+      while ((tokens+tokenCount - 1 - i)->type != TokenType_openBracket) {
+        printf("skipping\n");
+        i++;
+        if (i >= tokenCount) {
+          printError("parseExpression close bracket with no accompanying open bracket");
+          return NULL;
+        }
+      }
+    }
     if (token.type == TokenType_star) {
       ExpressionNode *result = malloc(sizeof(ExpressionNode));
       result->type = ExpressionNodeType_binary;
@@ -134,6 +146,18 @@ ExpressionNode *parseExpression(Token *tokens, int tokenCount) {
   // iterate back through tokens, looking for + or -
   for (int i = 0; i < tokenCount; i++) {
     Token token = *(tokens + tokenCount - 1 - i);
+    // skip over contents of brackets
+    printf("token.type=%d\n", token.type);
+    if (token.type == TokenType_closeBracket) {
+      while ((tokens+tokenCount - 1 - i)->type != TokenType_openBracket) {
+        printf("skipping\n");
+        i++;
+        if (i >= tokenCount) {
+          printError("parseExpression close bracket with no accompanying open bracket");
+          return NULL;
+        }
+      }
+    }
     if (token.type == TokenType_plus) {
       ExpressionNode *result = malloc(sizeof(ExpressionNode));
       result->type = ExpressionNodeType_binary;
