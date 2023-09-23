@@ -7,25 +7,160 @@
 void printError(char *message) { printf("ERROR: %s\n", message); }
 
 typedef enum {
-  number,
-  plus,
-  minus,
-  star,
-  slash,
-  openBracket,
-  closeBracket,
-  end,
+  TokenType_number,
+  TokenType_plus,
+  TokenType_minus,
+  TokenType_star,
+  TokenType_slash,
+  TokenType_openBracket,
+  TokenType_closeBracket,
 } TokenType;
 
 typedef struct {
   TokenType type;
   union {
     char c;
-    float f;
+    double f;
   } value;
 } Token;
 
-void getTokens(char *input, Token *output) {
+typedef enum {
+  ExpressionNodeType_leaf,
+  ExpressionNodeType_binary,
+} ExpressionNodeType;
+
+typedef enum {
+  BinaryOperatorNodeType_addition,
+  BinaryOperatorNodeType_subtraction,
+  BinaryOperatorNodeType_multiplication,
+  BinaryOperatorNodeType_division,
+} BinaryOperatorNodeType;
+
+struct ExpressionNode;
+typedef struct {
+  BinaryOperatorNodeType type;
+  struct ExpressionNode *left;
+  struct ExpressionNode *right;
+} BinaryOperatorNode;
+
+typedef struct {
+  double value;
+} LeafNode;
+
+typedef struct ExpressionNode {
+  ExpressionNodeType type;
+  union {
+    BinaryOperatorNode b;
+    LeafNode l;
+  } node;
+} ExpressionNode;
+
+ExpressionNode *parseExpression(Token *, int);
+// return NULL on error
+ExpressionNode *parseValue(Token *tokens, int tokenCount) {
+  if (tokenCount == 0) {
+    printError("parseValue tokenCount zero");
+    return NULL;
+  }
+  if (tokenCount == 1) {
+    Token token = *tokens;
+    if (token.type == TokenType_number) {
+      ExpressionNode *result = malloc(sizeof(ExpressionNode));
+      result->type = ExpressionNodeType_leaf;
+      result->node.l = (LeafNode){.value = token.value.f};
+      return result;
+    }
+    printError("parseValue single token not a number");
+    return NULL;
+  }
+
+  Token firstToken = *tokens;
+  if (firstToken.type != TokenType_openBracket) {
+    printError("parseValue multiple tokens not starting with open bracket");
+    return NULL;
+  }
+  Token lastToken = *(tokens + tokenCount - 1);
+  if (lastToken.type != TokenType_closeBracket) {
+    printError("parseValue multiple tokens not ending with close bracket");
+    return NULL;
+  }
+
+  return parseExpression(tokens + 1, tokenCount - 2);
+}
+
+// return NULL on error
+ExpressionNode *parseFactor(Token *tokens, int tokenCount) {
+  // iterate back through tokens, looking for * or /
+  for (int i = 0; i < tokenCount; i++) {
+    Token token = *(tokens + tokenCount - 1 - i);
+    if (token.type == TokenType_star) {
+      ExpressionNode *result = malloc(sizeof(ExpressionNode));
+      result->type = ExpressionNodeType_binary;
+      result->node.b =
+          (BinaryOperatorNode){.type = BinaryOperatorNodeType_multiplication,
+                               .left = parseFactor(tokens, tokenCount - i - 1),
+                               .right = parseValue(tokens + tokenCount - i, i)};
+    }
+    if (token.type == TokenType_slash) {
+      ExpressionNode *result = malloc(sizeof(ExpressionNode));
+      result->type = ExpressionNodeType_binary;
+      result->node.b =
+          (BinaryOperatorNode){.type = BinaryOperatorNodeType_division,
+                               .left = parseFactor(tokens, tokenCount - i - 1),
+                               .right = parseValue(tokens + tokenCount - i, i)};
+    }
+  }
+  return parseValue(tokens, tokenCount);
+}
+
+// return NULL on error
+ExpressionNode *parseExpression(Token *tokens, int tokenCount) {
+  // iterate back through tokens, looking for + or -
+  for (int i = 0; i < tokenCount; i++) {
+    Token token = *(tokens + tokenCount - 1 - i);
+    if (token.type == TokenType_plus) {
+      ExpressionNode *result = malloc(sizeof(ExpressionNode));
+      result->type = ExpressionNodeType_binary;
+      result->node.b =
+          (BinaryOperatorNode){.type = BinaryOperatorNodeType_addition,
+                               .left = parseExpression(tokens, tokenCount - i - 1),
+                               .right = parseFactor(tokens + tokenCount - i, i)};
+    }
+    if (token.type == TokenType_minus) {
+      ExpressionNode *result = malloc(sizeof(ExpressionNode));
+      result->type = ExpressionNodeType_binary;
+      result->node.b =
+          (BinaryOperatorNode){.type = BinaryOperatorNodeType_subtraction,
+                               .left = parseExpression(tokens, tokenCount - i - 1),
+                               .right = parseFactor(tokens + tokenCount - i, i)};
+    }
+  }
+  return parseFactor(tokens, tokenCount);
+}
+
+double evaluate(ExpressionNode *node) {
+  switch (node->type) {
+  case ExpressionNodeType_leaf:
+    return node->node.l.value;
+  case ExpressionNodeType_binary: {
+    double left = evaluate(node->node.b.left);
+    double right = evaluate(node->node.b.right);
+    switch (node->node.b.type) {
+    case BinaryOperatorNodeType_addition:
+      return left + right;
+    case BinaryOperatorNodeType_subtraction:
+      return left - right;
+    case BinaryOperatorNodeType_multiplication:
+      return left * right;
+    case BinaryOperatorNodeType_division:
+      return left / right;
+    }
+  }
+  }
+}
+
+// return number of tokens on success, return -1 on error
+int getTokens(char *input, Token *output) {
   int tokenCount = 0;
   while (*input) {
     while (isspace(*input)) {
@@ -33,22 +168,22 @@ void getTokens(char *input, Token *output) {
     }
     Token token;
     if (*input == '+') {
-      token = (Token){.type = plus, .value = '+'};
+      token = (Token){.type = TokenType_plus, .value = '+'};
       input++;
     } else if (*input == '-') {
-      token = (Token){.type = minus, .value = '-'};
+      token = (Token){.type = TokenType_minus, .value = '-'};
       input++;
     } else if (*input == '*') {
-      token = (Token){.type = star, .value = '*'};
+      token = (Token){.type = TokenType_star, .value = '*'};
       input++;
     } else if (*input == '/') {
-      token = (Token){.type = slash, .value = '/'};
+      token = (Token){.type = TokenType_slash, .value = '/'};
       input++;
     } else if (*input == '(') {
-      token = (Token){.type = openBracket, .value = '('};
+      token = (Token){.type = TokenType_openBracket, .value = '('};
       input++;
     } else if (*input == ')') {
-      token = (Token){.type = closeBracket, .value = ')'};
+      token = (Token){.type = TokenType_closeBracket, .value = ')'};
       input++;
     } else if (isdigit(*input) || *input == '.') {
       char numberBuffer[MAX_NUM_LENGTH];
@@ -58,14 +193,14 @@ void getTokens(char *input, Token *output) {
         numberBuffer[numCount++] = *input++;
       }
       numberBuffer[numCount] = '\0';
-      token = (Token){.type = number, .value.f = atof(numberBuffer)};
+      token = (Token){.type = TokenType_number, .value.f = atof(numberBuffer)};
     } else {
       printError("Illegal character");
-      exit(1);
+      return -1;
     }
     output[tokenCount++] = token;
   }
-  output[tokenCount++] = (Token){.type = end, .value = '\0'};
+  return tokenCount;
 }
 
 int main(int argc, char *argv[]) {
@@ -76,16 +211,24 @@ int main(int argc, char *argv[]) {
   char *input = argv[1];
 
   Token tokens[MAX_TOKENS];
-  getTokens(input, tokens);
+  int tokenCount = getTokens(input, tokens);
+  if (tokenCount == -1)
+    goto error;
 
-  Token* tp = tokens;
-  while(tp->type != end) {
-    printf("%d\n", tp->type);
-    tp++;
+  // debug printing
+  printf("Start of tokens:\n");
+  for (int i = 0; i < tokenCount; i++) {
+    printf("%d. type=%d, value.f=%f\n", i, (tokens + i)->type,
+           (tokens + i)->value.f);
   }
+  printf("End of tokens\n");
+
   // Parsing
+  ExpressionNode *rootNode = parseExpression(tokens, tokenCount);
 
   // Evaluating
+  double result = evaluate(rootNode);
+  printf("Result = %f", result);
   return 0;
 
 error:
