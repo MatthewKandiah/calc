@@ -7,12 +7,12 @@
 void printError(char *message) { printf("ERROR: %s\n", message); }
 
 typedef enum {
-  TokenType_number, // 0
-  TokenType_plus, // 1
-  TokenType_minus, // 2
-  TokenType_star, // 3
-  TokenType_slash, // 4
-  TokenType_openBracket, // 5
+  TokenType_number,       // 0
+  TokenType_plus,         // 1
+  TokenType_minus,        // 2
+  TokenType_star,         // 3
+  TokenType_slash,        // 4
+  TokenType_openBracket,  // 5
   TokenType_closeBracket, // 6
 } TokenType;
 
@@ -62,7 +62,8 @@ ExpressionNode *parseValue(Token *tokens, int tokenCount) {
   printf("\ttokenCount: %d\n", tokenCount);
   printf("\tfirstToken: type=%d, value=%f\n", tokens->type, tokens->value.f);
   Token debugLastToken = *(tokens + tokenCount - 1);
-  printf("\tlastToken: type=%d, value=%f\n", debugLastToken.type, debugLastToken.value.f);
+  printf("\tlastToken: type=%d, value=%f\n", debugLastToken.type,
+         debugLastToken.value.f);
   if (tokenCount == 0) {
     printError("parseValue tokenCount zero");
     return NULL;
@@ -99,22 +100,24 @@ ExpressionNode *parseFactor(Token *tokens, int tokenCount) {
   printf("parseFactor:\n");
   printf("\tfirstToken: type=%d, value=%f\n", tokens->type, tokens->value.f);
   Token debugLastToken = *(tokens + tokenCount - 1);
-  printf("\tlastToken: type=%d, value=%f\n", debugLastToken.type, debugLastToken.value.f);
+  printf("\tlastToken: type=%d, value=%f\n", debugLastToken.type,
+         debugLastToken.value.f);
   // iterate back through tokens, looking for * or /
   for (int i = 0; i < tokenCount; i++) {
     Token token = *(tokens + tokenCount - 1 - i);
     // skip over contents of brackets
-    printf("token.type=%d\n", token.type);
-    if (token.type == TokenType_closeBracket) {
-      while ((tokens+tokenCount - 1 - i)->type != TokenType_openBracket) {
-        printf("skipping\n");
-        i++;
-        if (i >= tokenCount) {
-          printError("parseExpression close bracket with no accompanying open bracket");
-          return NULL;
-        }
+    int unaccountedCloseBracketCount = 0;
+    do {
+      if (token.type == TokenType_closeBracket) {
+        unaccountedCloseBracketCount++;
+      } else if (token.type == TokenType_openBracket) {
+        unaccountedCloseBracketCount--;
       }
-    }
+      if (unaccountedCloseBracketCount > 0) {
+        i++;
+        token = *(tokens + tokenCount - 1 - i);
+      }
+    } while (unaccountedCloseBracketCount > 0);
     if (token.type == TokenType_star) {
       ExpressionNode *result = malloc(sizeof(ExpressionNode));
       result->type = ExpressionNodeType_binary;
@@ -142,38 +145,40 @@ ExpressionNode *parseExpression(Token *tokens, int tokenCount) {
   printf("parseExpression:\n");
   printf("\tfirstToken: type=%d, value=%f\n", tokens->type, tokens->value.f);
   Token debugLastToken = *(tokens + tokenCount - 1);
-  printf("\tlastToken: type=%d, value=%f\n", debugLastToken.type, debugLastToken.value.f);
+  printf("\tlastToken: type=%d, value=%f\n", debugLastToken.type,
+         debugLastToken.value.f);
   // iterate back through tokens, looking for + or -
   for (int i = 0; i < tokenCount; i++) {
     Token token = *(tokens + tokenCount - 1 - i);
     // skip over contents of brackets
-    printf("token.type=%d\n", token.type);
-    if (token.type == TokenType_closeBracket) {
-      while ((tokens+tokenCount - 1 - i)->type != TokenType_openBracket) {
-        printf("skipping\n");
-        i++;
-        if (i >= tokenCount) {
-          printError("parseExpression close bracket with no accompanying open bracket");
-          return NULL;
-        }
+    int unaccountedCloseBracketCount = 0;
+    do {
+      if (token.type == TokenType_closeBracket) {
+        unaccountedCloseBracketCount++;
+      } else if (token.type == TokenType_openBracket) {
+        unaccountedCloseBracketCount--;
       }
-    }
+      if (unaccountedCloseBracketCount > 0) {
+        i++;
+        token = *(tokens + tokenCount - 1 - i);
+      }
+    } while (unaccountedCloseBracketCount > 0);
     if (token.type == TokenType_plus) {
       ExpressionNode *result = malloc(sizeof(ExpressionNode));
       result->type = ExpressionNodeType_binary;
-      result->node.b =
-          (BinaryOperatorNode){.type = BinaryOperatorNodeType_addition,
-                               .left = parseExpression(tokens, tokenCount - i - 1),
-                               .right = parseFactor(tokens + tokenCount - i, i)};
+      result->node.b = (BinaryOperatorNode){
+          .type = BinaryOperatorNodeType_addition,
+          .left = parseExpression(tokens, tokenCount - i - 1),
+          .right = parseFactor(tokens + tokenCount - i, i)};
       return result;
     }
     if (token.type == TokenType_minus) {
       ExpressionNode *result = malloc(sizeof(ExpressionNode));
       result->type = ExpressionNodeType_binary;
-      result->node.b =
-          (BinaryOperatorNode){.type = BinaryOperatorNodeType_subtraction,
-                               .left = parseExpression(tokens, tokenCount - i - 1),
-                               .right = parseFactor(tokens + tokenCount - i, i)};
+      result->node.b = (BinaryOperatorNode){
+          .type = BinaryOperatorNodeType_subtraction,
+          .left = parseExpression(tokens, tokenCount - i - 1),
+          .right = parseFactor(tokens + tokenCount - i, i)};
       return result;
     }
   }
