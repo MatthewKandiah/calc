@@ -1,3 +1,6 @@
+#define MAX_TOKENS 200
+#define MAX_NUM_LENGTH 200
+
 typedef enum {
   TokenType_number,       // 0
   TokenType_plus,         // 1
@@ -46,6 +49,9 @@ typedef struct ExpressionNode {
   } node;
 } ExpressionNode;
 
+void printError(char *);
+int getTokens(char *, Token *);
 ExpressionNode *parseExpression(Token *, int);
 ExpressionNode *parseFactor(Token *, int);
 ExpressionNode *parseValue(Token *, int);
+double evaluate(ExpressionNode *);
