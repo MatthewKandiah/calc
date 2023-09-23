@@ -187,6 +187,11 @@ double evaluate(ExpressionNode *node) {
     }
   }
   }
+  printError("evaluate failed to evaluate node");
+  // Don't think there's an easy way to signal in the return that something went wrong
+  // Could pass in a pointer to an error flag if we need to handle this more smartly later?
+  // Or pass in a pointer to where we will store the result and return an error flag? I think both work
+  return 0;
 }
 
 // return number of tokens on success, return -1 on error
