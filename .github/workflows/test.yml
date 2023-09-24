@@ -1,7 +1,7 @@
 name: Test
 on: [push]
 jobs:
-  C tests:
+  C:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
