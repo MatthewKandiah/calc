@@ -1,11 +1,13 @@
 name: Test
 on: [push]
 jobs:
-  test:
+  C tests:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - run: |
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Run tests
+        run: |
           cd c
           mkdir bin
           make test
