@@ -6,4 +6,6 @@ Input: string containing a valid sequence of digits, arithmetic operators, and b
 Output: result of the arithmetic string, obeying proper order of operations
 
 Todo: 
-- write some tests for the C solution and refactor
+- write a single pass evaluation solution in C, parse next token, use an operator precedence lookup table and cached previous operator to establish order of operations
+- repeat in another language
+
