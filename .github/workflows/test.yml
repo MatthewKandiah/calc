@@ -1,11 +1,12 @@
 name: Test
 on: [push]
 jobs:
-  runs-on: ubuntu-latest
-  steps:
-    - name: Check out repo
-      uses: actions/checkout@v4
-    - run: echo "${{ github.repository }} cloned"
-    - name: List files in repo
-      run: ls ${{ github.workspace }}
+  Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+      - run: echo "${{ github.repository }} cloned"
+      - name: List files in repo
+        run: ls ${{ github.workspace }}
 
