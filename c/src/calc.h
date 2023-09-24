@@ -56,3 +56,4 @@ ExpressionNode *parseFactor(Token *, int);
 ExpressionNode *parseValue(Token *, int);
 double evaluate(ExpressionNode *);
 double twoPassEvaluate(char *);
+Token getNextToken(char **);

@@ -151,41 +151,48 @@ int getTokens(char *input, Token *output) {
       input++;
     }
     if (!(*input)) break;
+    Token token = getNextToken(&input);
+    output[tokenCount++] = token;
+  }
+  return tokenCount;
+}
+
+Token getNextToken(char **input) {
     Token token;
-    if (*input == '+') {
+    if (**input == '+') {
       token.type = TokenType_plus;
-      input++;
-    } else if (*input == '-') {
+      (*input)++;
+    } else if (**input == '-') {
       token.type = TokenType_minus;
-      input++;
-    } else if (*input == '*') {
+      (*input)++;
+    } else if (**input == '*') {
       token.type = TokenType_star;
-      input++;
-    } else if (*input == '/') {
+      (*input)++;
+    } else if (**input == '/') {
       token.type = TokenType_slash;
-      input++;
-    } else if (*input == '(') {
+      (*input)++;
+    } else if (**input == '(') {
       token.type = TokenType_openBracket;
-      input++;
-    } else if (*input == ')') {
+      (*input)++;
+    } else if (**input == ')') {
       token.type = TokenType_closeBracket;
-      input++;
-    } else if (isdigit(*input) || *input == '.') {
+      (*input)++;
+    } else if (isdigit(**input) || **input == '.') {
       char numberBuffer[MAX_NUM_LENGTH];
       int numCount = 0;
-      numberBuffer[numCount++] = *input++;
-      while (isdigit(*input) || *input == '.') {
-        numberBuffer[numCount++] = *input++;
+      numberBuffer[numCount++] = **input;
+      (*input)++;
+      while (isdigit(**input) || **input == '.') {
+        numberBuffer[numCount++] = **input;
+        (*input)++;
       }
       numberBuffer[numCount] = '\0';
       token = (Token){.type = TokenType_number, .value.f = atof(numberBuffer)};
     } else {
       printError("Illegal character");
-      return -1;
+      exit(1);
     }
-    output[tokenCount++] = token;
-  }
-  return tokenCount;
+    return token;
 }
 
 double twoPassEvaluate(char *input) {
