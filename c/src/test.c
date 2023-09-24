@@ -32,8 +32,8 @@ int main(void) {
   test("whitespace", "   1   +   1   ", 2);
   test("order of operations", "1-2*3+4/2-1", -4);
   test("ignore outer brackets", "(1+2+3)", 6);
-  test("order of brackets", "(1-2)*(3+4)/(1-2)", 6);
-  test("nested brackets", "((1+2) * (3-4*(5+6)+(7-8)))", -125);
+  test("order of brackets", "(1-2)*(3+4)/(1-2)", 7);
+  test("nested brackets", "((1+2) * (3-4*(5+6)+(7-8)))", -126);
 
   summariseResults();
   return failureCount;
