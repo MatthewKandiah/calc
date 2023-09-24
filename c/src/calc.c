@@ -187,3 +187,9 @@ int getTokens(char *input, Token *output) {
   }
   return tokenCount;
 }
+
+double twoPassEvaluate(char *input) {
+  Token tokens[MAX_TOKENS];
+  int tokenCount = getTokens(input, tokens);
+  return evaluate(parseExpression(tokens, tokenCount));
+};

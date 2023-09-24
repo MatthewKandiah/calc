@@ -6,20 +6,9 @@
 int main(int argc, char *argv[]) {
   if (argc != 2) {
     printError("Expected a single string argument");
-    goto error;
+    return 1;
   }
   char *input = argv[1];
-
-  Token tokens[MAX_TOKENS];
-  int tokenCount = getTokens(input, tokens);
-  if (tokenCount == -1)
-    goto error;
-
-  ExpressionNode *rootNode = parseExpression(tokens, tokenCount);
-
-  printf("%f\n", evaluate(rootNode));
+  printf("%f\n", twoPassEvaluate(input));
   return 0;
-
-error:
-  return 1;
 }

@@ -8,9 +8,7 @@ static int testCount = 0;
 
 void test(char *name, char *input, double expectedOutput) {
   printf("%s - ", name);
-  Token tokens[MAX_TOKENS];
-  int tokenCount = getTokens(input, tokens);
-  double result = evaluate(parseExpression(tokens, tokenCount));
+  double result = twoPassEvaluate(input);
   if (result == expectedOutput) {
     printf("SUCCESS\n");
   } else {
